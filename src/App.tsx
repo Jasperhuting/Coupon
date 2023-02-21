@@ -1,42 +1,131 @@
 import { useState, useEffect } from 'react';
 
 import { collection, getDocs, getFirestore, doc, addDoc, deleteDoc } from "firebase/firestore";
-import { createUserWithEmailAndPassword, getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "firebase/auth";
+import { getFunctions, httpsCallable } from "firebase/functions";
+import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+  import { faUserNinja } from '@fortawesome/free-solid-svg-icons'
 
 import styled from 'styled-components/macro';
 
 import db from './db/index';
 
 import './App.css';
-import AddGiftcard, { AddGiftCardData } from './AddGiftcard';
+import AddGiftcard, { AddGiftCardData } from './components/AddGiftcard';
 
-const GiftCard = styled.div`
-    padding: 10px;
+import { Column, StyledColumn } from './components/column';
+import { InformationBar } from './components/InformationBar';
+import { Login } from './components/Login';
+import { Avatar } from './components/Avatar';
+
+
+const GiftCardRow = styled.div<{extra?: boolean, endrow?: boolean}>`  
     display: flex;
+    flex-direction: row;
     width: 100%;
-    border-bottom: 1px solid red;
-    background-color: white;
-    color: #222;
-    margin-bottom: 6px;
-      box-sizing: border-box;
+    gap: 1px;
+    border-bottom: 1px solid #2b3446;    
+    margin-bottom: 1px;
+    border-left: 1px solid #e5e5e5;
+    border-right: 1px solid #e5e5e5;
+    box-sizing: border-box;
+     ${StyledColumn} {
+      &:nth-child(1) {
+      align-items: flex-start;
+      padding-left: 20px;
+      }
+   }
+   ${StyledColumn} {
+      &:nth-child(2) {
+      align-items: flex-start;
+      padding-left: 20px;
+      }
+   }
 
+   background-color: ${props => props.endrow ? '#000' : ''};
+   ${StyledColumn} {
+      background-color: ${props => props.endrow ? '#000 !important' : ''};
+      color: ${props => props.endrow ? '#fff !important' : ''};
+      margin-top: ${props => props.endrow ? '-2px' : '0'};
+
+   }
+
+   position: ${props => props.endrow ? 'sticky' : 'relative'};
+   bottom: ${props => props.endrow ? '0' : 'auto'};
 `
-const GiftCardName = styled.div`
-  margin: 2px 4px;
-  flex: 1;
+
+const GiftCard = styled.div<{extra: boolean}>`
+width: 100%;
+
+&:nth-child(even) {
+  ${GiftCardRow} {
+          ${StyledColumn} {
+    background-color: ${props => !props.extra && '#eee'};
+   }
+  }
+}
+
+  
 `
-const GiftCardAmount = styled.div`
-  margin: 2px 4px;
-  flex: 1;
+
+const GiftCardbutton = styled.button`
+      padding: 10px;
+      background-color: white;
+      box-sizing: border-box;
+      display: block;
+      border: 1px solid #e5e5e5;
+      cursor: pointer;
+      border-radius: 4px;
+
+      &:hover {
+        background-color: #e5e5e5;
+      }
 `
-const GiftCardvalidDate = styled.div`
-  margin: 2px 4px;
-  flex: 1;
+
+const Content = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: calc(100% - 40px);
+  max-width: 1024px;
+  padding: 20px;
+  box-sizing: border-box;
+  background-color: white;
+  border-radius: 4px;
 `
+
+
+const TableHeader = styled.div`
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  gap: 1px;
+  margin-bottom: 2px;
+
+  ${StyledColumn} {
+    background-color: #2b3446;
+    color: white;
+
+    &:nth-child(2) {      
+      align-items: flex-start;
+      padding-left: 20px;
+    }
+
+    &:nth-child(1) {
+      border-top-left-radius: 4px;
+      align-items: flex-start;
+      padding-left: 20px;
+    }
+    &:last-child {
+      border-top-right-radius: 4px;
+    }
+  }
+  
+`
+
 
 const GiftCardOwner = styled.div`
-  flex: 1%;
   margin: 2px 4px;
+  font-size: 11px;
 `
 
 type Giftcards = {
@@ -53,90 +142,24 @@ const logout = () => {
   console.log(test);
 };
 
-const registerWithEmailAndPassword = async (name: string, email: string, password: string) => {
-  try {
-    const dataaa = getFirestore(db);
+const LoggedInStyled = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+`
 
-    const auth = getAuth(db);
-
-    const res = await createUserWithEmailAndPassword(auth, email, password);
-    const user = res.user;
-    await addDoc(collection(dataaa, "users"), {
-      uid: user.uid,
-      name,
-      authProvider: "local",
-      email,
-    });
-  } catch (err: any) {
-    console.error(err);
-    alert(err.message);
-  }
-};
-
-const logInWithEmailAndPassword = async (email: string, password: string) => {
-  try {
-    const auth = getAuth(db);
-    const test = await signInWithEmailAndPassword(auth, email, password);
-    
-    
-  } catch (err: any) {
-    console.error(err);
-    alert(err.message);
-  }
-};
-
-const Login = ({loginState, userUid} : {loginState: string, userUid: string}) => {
-
-  type LogindataProps = {
-    email: string;
-    password: string;
-  }
-  type RegisterdataProps = {
-    email: string;
-    name: string;
-    password: string;
-  }
-
-  const [LoginData, setLoginData] = useState<LogindataProps>({
-        email: '',
-        password: '',
-    })
-  const [RegisterData, setRegisterData] = useState<RegisterdataProps>({
-        email: '',
-        name: '',
-        password: '',
-    })
-
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>, name: string) => {
-        const target = event.target as HTMLInputElement;
-        setLoginData({ ...LoginData, [name]: target.value })
-    }
-  const handleRegisterChange = (event: React.ChangeEvent<HTMLInputElement>, name: string) => {
-        const target = event.target as HTMLInputElement;
-        setRegisterData({ ...RegisterData, [name]: target.value })
-    }
-
+const LoggedIn = ({ loginState, userUid, currentEmail } : { loginState: string, userUid: string, currentEmail: string }) => {
   return <>
-
-    {loginState === 'loggedOut' && <>login:
-    <input value={LoginData.email} placeholder="email" type="text" onChange={($el) => handleChange($el, 'email')} />
-    <input value={LoginData.password} placeholder="password" type="password" onChange={($el) => handleChange($el, 'password')} />
-    <button disabled={!LoginData.email && !LoginData.password} onClick={() => logInWithEmailAndPassword(LoginData.email, LoginData.password)}>Login</button>
-    </>}
-  
-
-{loginState === 'loggedOut' && <>
-    <>register:</>
-    <input value={RegisterData.email} placeholder="email" type="text" onChange={($el) => handleRegisterChange($el, 'email')} />
-    <input value={RegisterData.name} placeholder="name" type="text" onChange={($el) => handleRegisterChange($el, 'name')} />
-    <input value={RegisterData.password} placeholder="password" type="password" onChange={($el) => handleRegisterChange($el, 'password')} />
-    <button onClick={() => registerWithEmailAndPassword(RegisterData.name, RegisterData.email, RegisterData.password)}>Register</button>
-    </>
-}
-    {loginState === 'loggedIn' && userUid && <button onClick={() => logout()}>Logout</button>}    
+    {loginState === 'loggedIn' && userUid && <LoggedInStyled>
+      <Avatar>
+        <FontAwesomeIcon size="1x" color="#2b3446" icon={faUserNinja} />
+      </Avatar>
+      {currentEmail}
+      <button onClick={() => logout()}>Logout</button>
+    </LoggedInStyled>}
   </>
-}
-
+};
 
 
 function App() {
@@ -147,6 +170,7 @@ function App() {
   const [currentEmail, setCurrentEmail] = useState<string>('');
   const [userUid, setUserUid] = useState<string>('');
   const [loginState, setLoginState] = useState<string>('loggedOut');
+  const [users, setUsers] = useState<any>([]);
 
   const auth = getAuth();
   onAuthStateChanged(auth, (user) => {
@@ -185,8 +209,6 @@ function App() {
 
   const addGiftcard = (data: AddGiftCardData) => {
     const dbRef = collection(firestore, "giftcards");
-
-
     addDoc(dbRef, data).then(() => {
       console.log('succesvol')
     }).finally(() => {
@@ -202,21 +224,30 @@ function App() {
     return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
   }
 
-  const fetchPost = async ()  => {
-    await getDocs(collection(firestore, "giftcards"))
-      .then((querySnapshot) => {
-        const newData = querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })).filter((data: Giftcards) => {
-            if (currentEmail === 'jasper.huting@gmail.com') {
-              return true;
-            }
+  const fetchPost = async () => {
 
-            if (userUid) {
-              return data.owner === userUid
-            } else {
-              return false;
-            }
-          
-          }).sort((a: Giftcards, b: Giftcards) => {
+    await getDocs(collection(firestore, "giftcards"))
+      .then(async (querySnapshot) => {
+
+        const users = [] as any;
+        await getDocs(collection(firestore, "users")).then((querySnapshot) => {
+          querySnapshot.docs.map((user) => users.push(user.data()))
+        })
+
+        setUsers(users);
+
+        const newData = querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })).filter((data: Giftcards) => {
+          if (currentEmail === 'jasper.huting@gmail.com') {
+            return true;
+          }
+
+          if (userUid) {
+            return data.owner === userUid
+          } else {
+            return false;
+          }
+
+        }).sort((a: Giftcards, b: Giftcards) => {
           if (!Date.parse(a.validDate!)) {
             return 1;
           }
@@ -250,25 +281,58 @@ function App() {
   }, [userUid])
 
   return (
+    <>
     <div className="App">
       <div className="App-header">
-        <Login loginState={loginState} userUid={userUid}/>
-        email: {currentEmail} <br />
-        userUid: {userUid}
-        <h1>({giftcards.length}) Giftcards, totaal: € {totalAmount}</h1>
-        {giftcards.map((giftcard) => {
-          return <GiftCard key={giftcard.id} data-id={giftcard.id}>
-            <GiftCardName>{giftcard.name}</GiftCardName>
-            <GiftCardAmount>{giftcard.amount} euro</GiftCardAmount>
-            {currentEmail === 'jasper.huting@gmail.com' && <GiftCardOwner>{userUid === giftcard.owner ? currentEmail : giftcard.owner}</GiftCardOwner>}
-            <GiftCardvalidDate>{giftcardDate(giftcard.validDate)}</GiftCardvalidDate>
-            <button onClick={() => deleteGiftcard(giftcard.id)} >Verwijder</button>
-          </GiftCard>
-        })}
-
-        <AddGiftcard owner={userUid} addGiftcard={(data: AddGiftCardData) => addGiftcard(data)} />
+        <LoggedIn loginState={loginState} currentEmail={currentEmail} userUid={userUid} />
       </div>
+      {loggedIn ?
+        <Content>
+          <InformationBar amountGiftcards={giftcards.length} totalAmount={totalAmount}/>
+          <TableHeader>
+            <Column>Naam</Column>
+            <Column>Waarde</Column>
+            <Column>Einddatum</Column>
+            <Column></Column>
+          </TableHeader>
+          {giftcards.map((giftcard) => {
+            return <GiftCard key={giftcard.id} data-id={giftcard.id} extra={currentEmail === 'jasper.huting@gmail.com'}>
+              <GiftCardRow>
+                    <Column>{giftcard.name}</Column>
+                    <Column>{giftcard.amount} euro</Column>
+              
+                    <Column>{giftcardDate(giftcard.validDate)}</Column>
+                    <Column><GiftCardbutton onClick={() => deleteGiftcard(giftcard.id)} >Verwijder</GiftCardbutton></Column>
+              </GiftCardRow>
+              {currentEmail === 'jasper.huting@gmail.com' && <GiftCardRow extra={true}>
+                <Column>
+                
+                  <GiftCardOwner>{users.find((user: any) => user.uid === giftcard.owner).email}</GiftCardOwner>
+                </Column>
+                <Column></Column>
+                <Column></Column>
+                <Column></Column>
+              </GiftCardRow>}
+            </GiftCard>
+          })}
+
+          <GiftCard key={giftcards.length + 1} data-id={giftcards.length + 1} extra={currentEmail === 'jasper.huting@gmail.com'}>
+              <GiftCardRow endrow={true}>
+                    <Column>Totaal ({giftcards.length})</Column>
+                    <Column>{totalAmount} euro</Column>
+              
+                    <Column></Column>
+                    <Column></Column>
+              </GiftCardRow>
+            </GiftCard>
+        </Content>:
+        <Content>
+          <Login loginState={loginState} />
+        </Content>}
+        
     </div>
+    <AddGiftcard loggedIn={loggedIn} owner={userUid} addGiftcard={(data: AddGiftCardData) => addGiftcard(data)} />
+    </>
   );
 }
 
