@@ -128,7 +128,7 @@ const GiftCardOwner = styled.div`
   font-size: 11px;
 `
 
-type Giftcards = {
+type Giftcard = {
   name?: string;
   amount?: number;
   validDate?: string;
@@ -164,7 +164,7 @@ const LoggedIn = ({ loginState, userUid, currentEmail } : { loginState: string, 
 
 function App() {
 
-  const [giftcards, setGiftcards] = useState<Giftcards[]>([]);
+  const [giftcards, setGiftcards] = useState<Giftcard[]>([]);
   const [totalAmount, setTotalAmount] = useState<number>(0);
   const [loggedIn, setLoggedIn] = useState<boolean>(false);
   const [currentEmail, setCurrentEmail] = useState<string>('');
@@ -236,7 +236,7 @@ function App() {
 
         setUsers(users);
 
-        const newData = querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })).filter((data: Giftcards) => {
+        const newData = querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })).filter((data: Giftcard) => {
           if (currentEmail === 'jasper.huting@gmail.com') {
             return true;
           }
@@ -247,7 +247,7 @@ function App() {
             return false;
           }
 
-        }).sort((a: Giftcards, b: Giftcards) => {
+        }).sort((a: Giftcard, b: Giftcard) => {
           if (!Date.parse(a.validDate!)) {
             return 1;
           }
@@ -269,9 +269,9 @@ function App() {
 
         console.log(newData);
         let initialValue = 0;
-        let totalAmount = newData.reduce((accumulator, currentValue: Giftcards) => accumulator + (currentValue && Number(currentValue?.amount) || 0),
+        let totalAmount = newData.reduce((accumulator, currentValue: Giftcard) => accumulator + (currentValue && Number(currentValue?.amount) || 0),
           initialValue);
-        setTotalAmount(totalAmount)
+        setTotalAmount(Number(totalAmount.toFixed(2)))
         setGiftcards(newData);
       })
   }
