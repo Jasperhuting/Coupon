@@ -6,6 +6,13 @@ admin.initializeApp();
 
 const {useremail, pass} = functions.config().gmail;
 
+enum Status {
+  NEW = "NEW",
+  DEFAULT = "DEFAULT",
+  USED = "USED",
+  DELETED = "DELETED",
+  EXPIRED = "EXPIRED",
+}
 
 type Giftcards = {
   name?: string;
@@ -13,6 +20,7 @@ type Giftcards = {
   validDate?: string;
   owner?: string;
   id: string;
+  status: Status;
 }
 
 type Users = {
@@ -27,6 +35,24 @@ type Users = {
 export const helloWorld = functions.https.onRequest((_, response) => {
   response.send("Mail verzonden vanaf functions!");
 });
+
+
+exports.checkIfExpired = functions.pubsub
+  .schedule("every day").onRun(async () => {
+    await admin.firestore()
+      .collection("giftcards").get().then((res) => {
+        res.docs.forEach((doc) => {
+          const dateInTime = new Date(doc.data().validDate).getTime();
+          const todayInTime = new Date().getTime();
+
+          if (dateInTime < todayInTime) {
+            const docRef = admin.firestore()
+              .collection("giftcards").doc(doc.id);
+            docRef.update({status: "EXPIRED"});
+          }
+        });
+      });
+  });
 
 
 exports.sendEveryDayAMail = functions.pubsub

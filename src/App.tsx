@@ -1,13 +1,16 @@
-import { useState, useEffect } from 'react';
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { useState } from "react";
+import { Content } from "./components/Content";
+import { Header } from "./components/Header";
 
-import { collection, getDocs, getFirestore, doc, addDoc, deleteDoc } from "firebase/firestore";
-import { getFunctions, httpsCallable } from "firebase/functions";
-import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-  import { faUserNinja } from '@fortawesome/free-solid-svg-icons'
+const App = () => {
 
-import styled from 'styled-components/macro';
+    const [currentEmail, setCurrentEmail] = useState<string>('');
+    const [loggedIn, setLoggedIn] = useState<Boolean>(false);
+    const [userUid, setUserUid] = useState<string>('');
+    const [loginState, setLoginState] = useState<string>('loggedOut');
 
+<<<<<<< Updated upstream
 import db from './db/index';
 
 import './App.css';
@@ -174,6 +177,10 @@ function App() {
 
   const auth = getAuth();
   onAuthStateChanged(auth, (user) => {
+=======
+    const auth = getAuth();
+      onAuthStateChanged(auth, (user) => {
+>>>>>>> Stashed changes
     if (user && user.email) {
       setLoggedIn(true)
       setUserUid(user.uid);
@@ -187,11 +194,9 @@ function App() {
     }
   });
 
-  const firestore = getFirestore(db)
-
-  const months = ["januari", "februari", "maart", "april", "mei", "juni", "juli", "augustus", "september", "oktober", "november", "december"];
 
 
+<<<<<<< Updated upstream
 
   const deleteGiftcard = (id: string) => {
 
@@ -332,8 +337,12 @@ function App() {
         
     </div>
     <AddGiftcard loggedIn={loggedIn} owner={userUid} addGiftcard={(data: AddGiftCardData) => addGiftcard(data)} />
+=======
+    return <>
+        <Header currentEmail={currentEmail} userUid={userUid} loginState={loginState} />        
+        <Content></Content>
+>>>>>>> Stashed changes
     </>
-  );
 }
 
 export default App;
