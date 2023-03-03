@@ -1,6 +1,6 @@
 import styled from "styled-components/macro"
 
-export const StyledColumn = styled.div<{row?: Boolean}>`
+export const StyledColumn = styled.div<{ row?: Boolean }>`
 
   
   width: 25%;
@@ -8,14 +8,14 @@ export const StyledColumn = styled.div<{row?: Boolean}>`
   padding: 5px;
   box-sizing: border-box;
   align-content: center;
-  justify-content: center;
   background-color: white;
   align-items: center;
   display: flex;
+  justify-content: center;
   flex-direction: ${props => props.row ? 'column' : 'row'};
 `
 
 
 export const Column = (props: any) => {
-    return <StyledColumn>{props.children}</StyledColumn>
+  return <StyledColumn row={props.row}>{props.children}</StyledColumn>
 }

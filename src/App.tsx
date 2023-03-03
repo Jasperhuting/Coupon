@@ -1,88 +1,31 @@
+import { useState, useEffect, createContext, useMemo } from 'react';
+
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { useState } from "react";
-import { Content } from "./components/Content";
-import { Header } from "./components/Header";
 
-const App = () => {
+import { createStore } from 'state-pool'
 
-    const [currentEmail, setCurrentEmail] = useState<string>('');
-    const [loggedIn, setLoggedIn] = useState<Boolean>(false);
-    const [userUid, setUserUid] = useState<string>('');
-    const [loginState, setLoginState] = useState<string>('loggedOut');
-
-<<<<<<< Updated upstream
-import db from './db/index';
+import styled from 'styled-components/macro';
 
 import './App.css';
-import AddGiftcard, { AddGiftCardData } from './components/AddGiftcard';
+import { AddGiftcard } from './components/AddGiftcard';
 
-import { Column, StyledColumn } from './components/column';
 import { InformationBar } from './components/InformationBar';
 import { Login } from './components/Login';
 import { Avatar } from './components/Avatar';
+import { GiftcardTable } from './components/GiftcardTable';
+import { GetAllGiftcardsReturnProps } from './types';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faUserNinja } from '@fortawesome/free-solid-svg-icons';
+import { getAllGiftcards, logout } from './firestore'
 
 
-const GiftCardRow = styled.div<{extra?: boolean, endrow?: boolean}>`  
-    display: flex;
-    flex-direction: row;
-    width: 100%;
-    gap: 1px;
-    border-bottom: 1px solid #2b3446;    
-    margin-bottom: 1px;
-    border-left: 1px solid #e5e5e5;
-    border-right: 1px solid #e5e5e5;
-    box-sizing: border-box;
-     ${StyledColumn} {
-      &:nth-child(1) {
-      align-items: flex-start;
-      padding-left: 20px;
-      }
-   }
-   ${StyledColumn} {
-      &:nth-child(2) {
-      align-items: flex-start;
-      padding-left: 20px;
-      }
-   }
 
-   background-color: ${props => props.endrow ? '#000' : ''};
-   ${StyledColumn} {
-      background-color: ${props => props.endrow ? '#000 !important' : ''};
-      color: ${props => props.endrow ? '#fff !important' : ''};
-      margin-top: ${props => props.endrow ? '-2px' : '0'};
 
-   }
-
-   position: ${props => props.endrow ? 'sticky' : 'relative'};
-   bottom: ${props => props.endrow ? '0' : 'auto'};
-`
-
-const GiftCard = styled.div<{extra: boolean}>`
-width: 100%;
-
-&:nth-child(even) {
-  ${GiftCardRow} {
-          ${StyledColumn} {
-    background-color: ${props => !props.extra && '#eee'};
-   }
-  }
-}
-
-  
-`
-
-const GiftCardbutton = styled.button`
-      padding: 10px;
-      background-color: white;
-      box-sizing: border-box;
-      display: block;
-      border: 1px solid #e5e5e5;
-      cursor: pointer;
-      border-radius: 4px;
-
-      &:hover {
-        background-color: #e5e5e5;
-      }
+const LoggedInStyled = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
 `
 
 const Content = styled.div`
@@ -97,252 +40,156 @@ const Content = styled.div`
 `
 
 
-const TableHeader = styled.div`
-  display: flex;
-  flex-direction: row;
-  width: 100%;
-  gap: 1px;
-  margin-bottom: 2px;
-
-  ${StyledColumn} {
-    background-color: #2b3446;
-    color: white;
-
-    &:nth-child(2) {      
-      align-items: flex-start;
-      padding-left: 20px;
-    }
-
-    &:nth-child(1) {
-      border-top-left-radius: 4px;
-      align-items: flex-start;
-      padding-left: 20px;
-    }
-    &:last-child {
-      border-top-right-radius: 4px;
-    }
-  }
-  
-`
 
 
-const GiftCardOwner = styled.div`
-  margin: 2px 4px;
-  font-size: 11px;
-`
+// const GiftCardOwner = styled.div`
+//   margin: 2px 4px;
+//   font-size: 11px;
+// `
 
-type Giftcard = {
-  name?: string;
-  amount?: number;
-  validDate?: string;
-  owner?: string;
-  id: string;
-}
+export const store = createStore();
 
-const logout = () => {
-  const auth = getAuth(db);
-  const test = signOut(auth);
-  console.log(test);
-};
-
-const LoggedInStyled = styled.div`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 10px;
-`
-
-const LoggedIn = ({ loginState, userUid, currentEmail } : { loginState: string, userUid: string, currentEmail: string }) => {
-  return <>
-    {loginState === 'loggedIn' && userUid && <LoggedInStyled>
-      <Avatar>
-        <FontAwesomeIcon size="1x" color="#2b3446" icon={faUserNinja} />
-      </Avatar>
-      {currentEmail}
-      <button onClick={() => logout()}>Logout</button>
-    </LoggedInStyled>}
-  </>
-};
-
+export const UserContext = createContext<any>(null);
 
 function App() {
 
-  const [giftcards, setGiftcards] = useState<Giftcard[]>([]);
-  const [totalAmount, setTotalAmount] = useState<number>(0);
+
+  const [giftcards, setGiftcards] = useState<GetAllGiftcardsReturnProps>();
   const [loggedIn, setLoggedIn] = useState<boolean>(false);
   const [currentEmail, setCurrentEmail] = useState<string>('');
   const [userUid, setUserUid] = useState<string>('');
   const [loginState, setLoginState] = useState<string>('loggedOut');
-  const [users, setUsers] = useState<any>([]);
+
+
+  // const [sharedData, setSharedData] = useState<MyContextType>({
+  //   currentEmail: '',
+  //   currentUid: '',
+  //   hideExpiredState: false,
+  //   hideUsedState: false,
+  // });
+
+  // const setData = () => {
+  //   setSharedData({
+  //     currentEmail: '',
+  //     currentUid: '',
+  //     hideExpiredState: true,
+  //     hideUsedState: false,
+  //   })
+  // }
+
+  const getGiftcards = async () => {
+    const giftcards = await getAllGiftcards(userUid, currentEmail);
+
+    setGiftcards(giftcards)
+  }
 
   const auth = getAuth();
   onAuthStateChanged(auth, (user) => {
-=======
-    const auth = getAuth();
-      onAuthStateChanged(auth, (user) => {
->>>>>>> Stashed changes
     if (user && user.email) {
       setLoggedIn(true)
       setUserUid(user.uid);
       setCurrentEmail(user.email);
       setLoginState('loggedIn')
+      store.setState("user", { currentEmail: user.email, currentUid: user.uid })
+
     } else {
       setLoggedIn(false)
       setCurrentEmail('');
       setUserUid('');
       setLoginState('loggedOut')
+      store.setState("user", { currentEmail: false, currentUid: false })
     }
   });
 
 
-
-<<<<<<< Updated upstream
-
-  const deleteGiftcard = (id: string) => {
-
-    document.querySelector(`[data-id="${id}"]`)?.classList.add('delete');
-
-    const docRef = doc(firestore, "giftcards", id);
-    deleteDoc(docRef).then(() => {
-      console.log('succesvol verwijderd');
-    }).catch(() => {
-      console.log('er is iets fout gegaan');
-    }).finally(() => {
-      fetchPost();
-    })
-  }
-
-  const addGiftcard = (data: AddGiftCardData) => {
-    const dbRef = collection(firestore, "giftcards");
-    addDoc(dbRef, data).then(() => {
-      console.log('succesvol')
-    }).finally(() => {
-      fetchPost();
-    })
-  }
-
-  const giftcardDate = (giftcardDate: string | undefined) => {
-    if (giftcardDate === null || !giftcardDate || giftcardDate === 'Invalid Date') {
-      return 'Geen einddata';
-    }
-    const date = new Date(giftcardDate);
-    return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
-  }
-
-  const fetchPost = async () => {
-
-    await getDocs(collection(firestore, "giftcards"))
-      .then(async (querySnapshot) => {
-
-        const users = [] as any;
-        await getDocs(collection(firestore, "users")).then((querySnapshot) => {
-          querySnapshot.docs.map((user) => users.push(user.data()))
-        })
-
-        setUsers(users);
-
-        const newData = querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id })).filter((data: Giftcard) => {
-          if (currentEmail === 'jasper.huting@gmail.com') {
-            return true;
-          }
-
-          if (userUid) {
-            return data.owner === userUid
-          } else {
-            return false;
-          }
-
-        }).sort((a: Giftcard, b: Giftcard) => {
-          if (!Date.parse(a.validDate!)) {
-            return 1;
-          }
-          if (!Date.parse(b.validDate!)) {
-            return -1;
-          }
-          // Convert the date strings to Date objects and compare them
-          const dateA = new Date(a.validDate!);
-          const dateB = new Date(b.validDate!);
-          if (dateA < dateB) {
-            return -1;
-          }
-          if (dateA > dateB) {
-            return 1;
-          }
-          return 0;
-        });
-
-
-        console.log(newData);
-        let initialValue = 0;
-        let totalAmount = newData.reduce((accumulator, currentValue: Giftcard) => accumulator + (currentValue && Number(currentValue?.amount) || 0),
-          initialValue);
-        setTotalAmount(Number(totalAmount.toFixed(2)))
-        setGiftcards(newData);
-      })
-  }
-
   useEffect(() => {
-    fetchPost();
-  }, [userUid])
+
+    if (giftcards?.allData && giftcards?.allData.length > 0) {
+      return;
+    }
+
+    getGiftcards();
+  }, [giftcards?.allData])
+
+
+
+  const LoggedIn = ({ loginState, userUid, currentEmail }: { loginState: string, userUid: string, currentEmail: string }) => {
+    return <>
+      {loginState === 'loggedIn' && userUid && <LoggedInStyled>
+        <Avatar>
+          <FontAwesomeIcon size="1x" color="#2b3446" icon={faUserNinja} />
+        </Avatar>
+        {currentEmail}
+        <button onClick={() => logout()}>Logout</button>
+      </LoggedInStyled>}
+    </>
+  };
+
+
 
   return (
     <>
-    <div className="App">
-      <div className="App-header">
-        <LoggedIn loginState={loginState} currentEmail={currentEmail} userUid={userUid} />
-      </div>
-      {loggedIn ?
-        <Content>
-          <InformationBar amountGiftcards={giftcards.length} totalAmount={totalAmount}/>
-          <TableHeader>
-            <Column>Naam</Column>
-            <Column>Waarde</Column>
-            <Column>Einddatum</Column>
-            <Column></Column>
-          </TableHeader>
-          {giftcards.map((giftcard) => {
-            return <GiftCard key={giftcard.id} data-id={giftcard.id} extra={currentEmail === 'jasper.huting@gmail.com'}>
-              <GiftCardRow>
-                    <Column>{giftcard.name}</Column>
-                    <Column>{giftcard.amount} euro</Column>
-              
-                    <Column>{giftcardDate(giftcard.validDate)}</Column>
-                    <Column><GiftCardbutton onClick={() => deleteGiftcard(giftcard.id)} >Verwijder</GiftCardbutton></Column>
-              </GiftCardRow>
-              {currentEmail === 'jasper.huting@gmail.com' && <GiftCardRow extra={true}>
-                <Column>
-                
-                  <GiftCardOwner>{users.find((user: any) => user.uid === giftcard.owner).email}</GiftCardOwner>
-                </Column>
-                <Column></Column>
-                <Column></Column>
-                <Column></Column>
-              </GiftCardRow>}
-            </GiftCard>
-          })}
+      <div className="App">
+        <div className="App-header">
+          <LoggedIn loginState={loginState} currentEmail={currentEmail} userUid={userUid} />
+        </div>
 
-          <GiftCard key={giftcards.length + 1} data-id={giftcards.length + 1} extra={currentEmail === 'jasper.huting@gmail.com'}>
-              <GiftCardRow endrow={true}>
-                    <Column>Totaal ({giftcards.length})</Column>
-                    <Column>{totalAmount} euro</Column>
-              
-                    <Column></Column>
-                    <Column></Column>
-              </GiftCardRow>
-            </GiftCard>
-        </Content>:
-        <Content>
-          <Login loginState={loginState} />
-        </Content>}
-        
-    </div>
-    <AddGiftcard loggedIn={loggedIn} owner={userUid} addGiftcard={(data: AddGiftCardData) => addGiftcard(data)} />
-=======
-    return <>
-        <Header currentEmail={currentEmail} userUid={userUid} loginState={loginState} />        
-        <Content></Content>
->>>>>>> Stashed changes
+        {loggedIn ?
+          <Content>
+            {giftcards && <>
+              <InformationBar amountGiftcards={giftcards.amount} totalAmount={giftcards.totalAmount} />
+              <GiftcardTable
+                expiredGiftcards={giftcards.expired}
+                usedGiftcards={giftcards.used}
+                deletedGiftcards={giftcards.deleted}
+                amountGiftcards={giftcards.amount}
+                newGiftcards={giftcards.new}
+                totalAmount={giftcards.totalAmount}
+                allData={giftcards.allData}
+                triggerReload={() => getGiftcards()}
+                defaultGiftcards={giftcards.default} ></GiftcardTable>
+            </>}
+          </Content> :
+          <Content>
+            <Login loginState={loginState} />
+          </Content>}
+
+      </div>
+      {loggedIn && <AddGiftcard triggerReload={() => getGiftcards()} />}
     </>
+  );
 }
 
 export default App;
+
+
+
+{/* {giftcards.filter((e) => e.validDate).filter((e) => e.used).filter((e) => {
+            const vandaag = new Date();
+            const dateInTime = e.validDate ? new Date(e.validDate).getTime() : new Date().getTime();
+            return dateInTime >= vandaag.getTime();
+            }).map((giftcard: Giftcard) => {
+            let datum = new Date();
+            const vandaag = new Date();
+            console.log('giftcard', giftcard.owner)
+            if (giftcard.validDate) {
+              datum = new Date(giftcard.validDate);
+            }
+            const day = datum.getDate();
+            const month = datum.getMonth()+1;
+            const year = datum.getFullYear();
+
+            const datumPlusDays = addDays(vandaag, 7);
+
+            const userEmail = users.find((e: User) => {
+                  return e.uid === giftcard.owner
+                })
+
+            if (datum.getTime() <= datumPlusDays.getTime()) {            
+              return <>
+                {userEmail ? userEmail.email : ''}
+                {day}-{month}-{year}
+              <br /></>
+            }
+            
+          })} */}

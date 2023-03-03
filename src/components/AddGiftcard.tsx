@@ -1,3 +1,5 @@
+import { store } from "App"
+import { addGiftcardToDatabase } from "firestore"
 import { useState } from "react"
 import styled from "styled-components/macro"
 
@@ -9,9 +11,7 @@ export type AddGiftCardData = {
 }
 
 type AddGiftCardProps = {
-    addGiftcard: (data: AddGiftCardData) => void,
-    owner: string,
-    loggedIn: boolean
+    triggerReload: () => void;
 }
 type FormdataProps = {
     name: string,
@@ -41,31 +41,31 @@ const AddGiftcardInput = styled.input`
     margin-right: 6px;
 `
 
-const AddGiftcard = (props: AddGiftCardProps) => {
+export const AddGiftcard = ({ triggerReload }: AddGiftCardProps) => {
+    const [user] = store.useState("user");
 
-    const loggedIn = props.loggedIn;
-
-    console.log("props.owner", props.owner);
 
     const [formData, setFormData] = useState<FormdataProps>({
         name: '',
         amount: 0,
-        owner: props.owner,
+        owner: '',
         validDate: '',
     })
 
     const addGiftCard = () => {
 
         formData.validDate = new Date(formData.validDate).toString();
-        formData.owner = props.owner;
+        formData.owner = '';
 
-        props.addGiftcard(formData);
+        // props.addGiftcard(formData);
+        addGiftcardToDatabase(formData, user.currentUid)
         setFormData({
             name: '',
             amount: 0,
-            owner: props.owner,
+            owner: '',
             validDate: '',
         });
+        triggerReload();
     }
 
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>, name: string) => {
@@ -73,14 +73,13 @@ const AddGiftcard = (props: AddGiftCardProps) => {
         setFormData({ ...formData, [name]: target.value })
     }
 
-    return loggedIn ?
-        (<AddGiftCardContainer>
-            <AddGiftcardInput name="name" placeholder="name" value={formData.name} type="text" onChange={($el) => handleChange($el, 'name')} />
-            <AddGiftcardInput name="amount" placeholder="amount" value={formData.amount} type="number" onChange={($el) => handleChange($el, 'amount')} />
-            <AddGiftcardInput name="validDate" placeholder="validDate" type="date" value={formData.validDate} onChange={($el) => handleChange($el, 'validDate')} />
-            <button onClick={addGiftCard} disabled={!formData.name}>Toevoegen</button>
-        </AddGiftCardContainer>)
-    : <></>}
+    return <AddGiftCardContainer>
+        <AddGiftcardInput name="name" placeholder="name" value={formData.name} type="text" onChange={($el) => handleChange($el, 'name')} />
+        <AddGiftcardInput name="amount" placeholder="amount" value={formData.amount} type="number" onChange={($el) => handleChange($el, 'amount')} />
+        <AddGiftcardInput name="validDate" placeholder="validDate" type="date" value={formData.validDate} onChange={($el) => handleChange($el, 'validDate')} />
+        <button onClick={addGiftCard} disabled={!formData.name}>Toevoegen</button>
+    </AddGiftCardContainer>
+}
 
 
 export default AddGiftcard;
