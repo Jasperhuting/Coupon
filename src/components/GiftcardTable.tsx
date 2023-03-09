@@ -180,6 +180,7 @@ export const GiftcardTable = ({ defaultGiftcards, expiredGiftcards, deletedGiftc
     const firestore = getFirestore(db)
 
     const setGiftcards = (sort: string, set: Giftcard[]) => {
+        console.log('set', set);
         return set.map((giftcard: Giftcard) => {
             return <GiftCard key={giftcard.id} data-id={giftcard.id}>
                 <GiftCardRow sort={sort}>
@@ -270,11 +271,21 @@ export const GiftcardTable = ({ defaultGiftcards, expiredGiftcards, deletedGiftc
             <Column>Acties</Column>
         </TableHeader>
         {getExpired}
-        {setGiftcards('new', newGiftcards)}
-        {setGiftcards('default', defaultGiftcards)}
-        {setGiftcards('used', usedGiftcards)}
-        {setGiftcards('deleted', deletedGiftcards)}
-        {getExpired === 'true' && setGiftcards('expired', expiredGiftcards)}
+        {newGiftcards && newGiftcards.length > 0 && setGiftcards('new', newGiftcards)}
+        {console.log("newGiftcards", newGiftcards)}
+        
+        {defaultGiftcards && defaultGiftcards.length > 0 && setGiftcards('default', defaultGiftcards)}
+        {console.log("defaultGiftcards", defaultGiftcards)}
+        
+        {usedGiftcards && usedGiftcards.length > 0 && setGiftcards('used', usedGiftcards)}
+        {console.log("usedGiftcards", usedGiftcards)}
+        
+        {deletedGiftcards && deletedGiftcards.length > 0 && setGiftcards('deleted', deletedGiftcards)}
+        {console.log("deletedGiftcards", deletedGiftcards)}
+
+        {expiredGiftcards && expiredGiftcards.length > 0 && setGiftcards('expired', expiredGiftcards)}
+        {/* {getExpired === 'true' && setGiftcards('expired', expiredGiftcards)} */}
+        {console.log("expiredGiftcards", expiredGiftcards)}
 
         {/*  currentEmail === 'jasper.huting@gmail.com' */}
         <GiftCard key={allData.length + 1} data-id={allData.length + 1} extra={true}>

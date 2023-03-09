@@ -55,78 +55,82 @@ exports.checkIfExpired = functions.pubsub
   });
 
 
-exports.sendEveryDayAMail = functions.pubsub
-  .schedule("every day").onRun(async () => {
-    functions.logger.info("Hello logs!", {structuredData: true});
+exports.test = functions.https.onRequest(async (request, response) => {
+// exports.sendEveryDayAMail = functions.pubsub
+  //   .schedule("every day").onRun(async () => {
+  functions.logger.info("Hello logs!", {structuredData: true});
 
 
-    // const users = [] as any;
+  const users = [] as any;
 
-    // await admin.firestore()
-    //   .collection("users").get().then((res) => {
-    //     res.docs.map((doc) => {
-    //       users.push({...doc.data(), data: []});
-    //     });
-    //   });
+  await admin.firestore()
+    .collection("users").get().then((res) => {
+      res.docs.map((doc) => {
+        users.push({...doc.data(), data: []});
+      });
+    });
 
-    // await admin.firestore()
-    //   .collection("giftcards").get().then((res) => {
-    //     res.docs.map((doc) => {
-    //       const user = users
-    //         .find((user: any) => user.uid === doc.data().owner);
-    //       if (user) {
-    //         user.data.push(doc.data());
-    //       }
-    //     });
-    //   });
+  await admin.firestore()
+    .collection("giftcards").get().then((res) => {
+      res.docs.map((doc) => {
+        const user = users
+          .find((user: any) => user.uid === doc.data().owner);
+        if (user) {
+          user.data.push(doc.data());
+        }
+      });
+    });
 
-    // functions.logger
-    //   .info(`users length ${users.length}`, {structuredData: true});
+  users.forEach((user: any) => {
+    let dataList = "";
 
-    // users.forEach((user: any) => {
-    //   let dataList = "";
+    // const dataItems = user.data;
 
-    //   const dataItems = user.data;
+    user.data.forEach((data: any) => {
+      const date = new Date(data.validDate);
+      const today = new Date();
+      const todayPlusSevenDays = new Date(today.setDate(today.getDate() - 7));
 
-    //   user.data.forEach((data: any) => {
-    //     const date = new Date(data.validDate);
+      if (todayPlusSevenDays <= date) {
+        dataList += `
+          <b>${data.name}</b>
+          ${data.amount} euro
+          (${date.getDate()}-${date.getMonth()+1}-${date.getFullYear()})
+          <br />`;
+      }
+    });
 
-    //     dataList += `
-    //       <b>${data.name}</b>
-    //       ${data.amount} euro
-    //       (${date.getDate()}-${date.getMonth()+1}-${date.getFullYear()})
-    //       <br />`;
-    //   });
+    response.send(`userData ${dataList}`);
 
-    //   const transporter = createTransport({
-    //     service: "Gmail",
-    //     port: 465,
-    //     secure: true,
-    //     auth: {
-    //       user: useremail, // generated ethereal user
-    //       pass, // generated ethereal password
-    //     },
-    //   });
+    // const transporter = createTransport({
+    //   service: "Gmail",
+    //   port: 465,
+    //   secure: true,
+    //   auth: {
+    //     user: useremail, // generated ethereal user
+    //     pass, // generated ethereal password
+    //   },
+    // });
 
 
-    //   const mailOptions = {
-    //     from: "jasperhuting@gmail.com",
-    //     to: user.email,
-    //     subject: `Je hebt nog ${dataItems.length}
-    //     ${dataItems.length > 1 ? "cadeaubonnen" : "cadeaubon"}
-    //     die je kunt verzilveren`,
-    //     html: dataList,
-    //   };
+    // const mailOptions = {
+    //   from: "jasperhuting@gmail.com",
+    //   to: user.email,
+    //   subject: `Je hebt nog ${dataItems.length}
+    //   ${dataItems.length > 1 ? "cadeaubonnen" : "cadeaubon"}
+    //   die je kunt verzilveren`,
+    //   html: dataList,
+    // };
 
-    //   transporter.sendMail(mailOptions, function(error: any, info: any) {
-    //     if (error) {
-    //       console.log(error);
-    //     } else {
-    //       console.log("Email sent: " + info.response);
-    //     }
-    //   });
+    // transporter.sendMail(mailOptions, function(error: any, info: any) {
+    //   if (error) {
+    //     console.log(error);
+    //   } else {
+    //     console.log("Email sent: " + info.response);
+    //   }
     // });
   });
+});
 
 
 exports.sendEveryMonthaMail = functions.pubsub
@@ -224,3 +228,4 @@ exports.sendEveryMonthaMail = functions.pubsub
       });
     });
   });
+

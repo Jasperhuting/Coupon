@@ -58,6 +58,7 @@ function App() {
   const [loggedIn, setLoggedIn] = useState<boolean>(false);
   const [currentEmail, setCurrentEmail] = useState<string>('');
   const [userUid, setUserUid] = useState<string>('');
+  const [showExpired, toggleShowExpired] = useState<boolean>(true);
   const [loginState, setLoginState] = useState<string>('loggedOut');
 
 
