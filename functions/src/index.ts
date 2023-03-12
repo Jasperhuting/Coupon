@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import {createTransport} from "nodemailer";
@@ -55,82 +56,88 @@ exports.checkIfExpired = functions.pubsub
   });
 
 
-exports.test = functions.https.onRequest(async (request, response) => {
-// exports.sendEveryDayAMail = functions.pubsub
-  //   .schedule("every day").onRun(async () => {
-  functions.logger.info("Hello logs!", {structuredData: true});
+exports.sendMailIfInside7Days = functions.pubsub
+  .schedule("every day").onRun(async () => {
+    const users = [] as any;
 
-
-  const users = [] as any;
-
-  await admin.firestore()
-    .collection("users").get().then((res) => {
-      res.docs.map((doc) => {
-        users.push({...doc.data(), data: []});
+    await admin.firestore()
+      .collection("users").get().then((res) => {
+        res.docs.map((doc) => {
+          users.push({...doc.data(), data: []});
+        });
       });
-    });
 
-  await admin.firestore()
-    .collection("giftcards").get().then((res) => {
-      res.docs.map((doc) => {
-        const user = users
-          .find((user: any) => user.uid === doc.data().owner);
-        if (user) {
-          user.data.push(doc.data());
-        }
+    await admin.firestore()
+      .collection("giftcards").get().then((res) => {
+        res.docs.map((doc) => {
+          const user = users
+            .find((user: any) => user.uid === doc.data().owner);
+          if (user) {
+            user.data.push(doc.data());
+          }
+        });
       });
-    });
 
-  users.forEach((user: any) => {
-    let dataList = "";
+    users.forEach((user: any) => {
+      let dataList = "";
+      let counter = 0;
 
-    // const dataItems = user.data;
+      // const dataItems = user.data;
 
-    user.data.forEach((data: any) => {
-      const date = new Date(data.validDate);
-      const today = new Date();
-      const todayPlusSevenDays = new Date(today.setDate(today.getDate() - 7));
+      user.data.forEach((data: any) => {
+        const date = new Date(data.validDate);
+        const today = new Date();
+        const _today = new Date();
+        const todayPlusSevenDays = new Date(_today.setDate(today.getDate() + 7));
 
-      if (todayPlusSevenDays <= date) {
-        dataList += `
+        functions.logger.info(`todayPlusSevenDays ${todayPlusSevenDays}`, {structuredData: true});
+        functions.logger.info(`date ${date}`, {structuredData: true});
+        functions.logger.info(`today ${new Date()}`, {structuredData: true});
+        functions.logger.info(`date <= todayPlusSevenDays ${date <= todayPlusSevenDays}`, {structuredData: true});
+        functions.logger.info(`date <= new Date() ${date <= new Date()}`, {structuredData: true});
+
+        if (date <= todayPlusSevenDays && date >= today) {
+          counter += 1;
+          dataList += `
           <b>${data.name}</b>
           ${data.amount} euro
           (${date.getDate()}-${date.getMonth()+1}-${date.getFullYear()})
           <br />`;
+        }
+      });
+
+
+      const transporter = createTransport({
+        service: "Gmail",
+        port: 465,
+        secure: true,
+        auth: {
+          user: useremail, // generated ethereal user
+          pass, // generated ethereal password
+        },
+      });
+
+
+      const mailOptions = {
+        from: "jasperhuting@gmail.com",
+        to: user.email,
+        subject: `Je hebt nog ${counter}
+      ${counter > 1 ? "cadeaubonnen" : "cadeaubon"}
+      die je kunt verzilveren`,
+        html: dataList,
+      };
+
+      if (counter > 0) {
+        transporter.sendMail(mailOptions, function(error: any, info: any) {
+          if (error) {
+            console.log(error);
+          } else {
+            console.log("Email sent: " + info.response);
+          }
+        });
       }
     });
-
-    response.send(`userData ${dataList}`);
-
-    // const transporter = createTransport({
-    //   service: "Gmail",
-    //   port: 465,
-    //   secure: true,
-    //   auth: {
-    //     user: useremail, // generated ethereal user
-    //     pass, // generated ethereal password
-    //   },
-    // });
-
-
-    // const mailOptions = {
-    //   from: "jasperhuting@gmail.com",
-    //   to: user.email,
-    //   subject: `Je hebt nog ${dataItems.length}
-    //   ${dataItems.length > 1 ? "cadeaubonnen" : "cadeaubon"}
-    //   die je kunt verzilveren`,
-    //   html: dataList,
-    // };
-
-    // transporter.sendMail(mailOptions, function(error: any, info: any) {
-    //   if (error) {
-    //     console.log(error);
-    //   } else {
-    //     console.log("Email sent: " + info.response);
-    //   }
-    // });
   });
-});
 
 
 exports.sendEveryMonthaMail = functions.pubsub
@@ -218,14 +225,16 @@ exports.sendEveryMonthaMail = functions.pubsub
         html: dataList,
       };
 
-      transporter.sendMail(mailOptions, (error: any, info: any) => {
-        if (error) {
-          functions.logger.info(`mail error ${error}`, {structuredData: true});
-          console.log(error);
-        } else {
-          console.log("Email sent: " + info.response);
-        }
-      });
+      if (dataItems.length > 0) {
+        transporter.sendMail(mailOptions, (error: any, info: any) => {
+          if (error) {
+            functions.logger.info(`mail error ${error}`, {structuredData: true});
+            console.log(error);
+          } else {
+            console.log("Email sent: " + info.response);
+          }
+        });
+      }
     });
   });
 

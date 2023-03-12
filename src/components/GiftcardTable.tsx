@@ -287,6 +287,22 @@ export const GiftcardTable = ({ defaultGiftcards, expiredGiftcards, deletedGiftc
         {/* {getExpired === 'true' && setGiftcards('expired', expiredGiftcards)} */}
         {console.log("expiredGiftcards", expiredGiftcards)}
 
+
+        {allData.map((data) => {
+            const date = new Date(data.validDate!);
+            const today = new Date();
+            const _today = new Date();
+            const todayPlusSevenDays = new Date(_today.setDate(today.getDate() + 7));
+            if (date <= todayPlusSevenDays && date >= today) {
+            console.log(data.name);
+            console.log({date});
+            console.log({todayPlusSevenDays});
+            console.log({today});
+            return <>test</>
+            } 
+            return false;
+        })}
+
         {/*  currentEmail === 'jasper.huting@gmail.com' */}
         <GiftCard key={allData.length + 1} data-id={allData.length + 1} extra={true}>
             <GiftCardRow endrow={true}>
