@@ -128,6 +128,7 @@ exports.sendMailIfInside7Days = functions.pubsub
       };
 
       if (counter > 0) {
+        console.log("none");
         transporter.sendMail(mailOptions, function(error: any, info: any) {
           if (error) {
             console.log(error);
