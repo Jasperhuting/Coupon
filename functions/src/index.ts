@@ -56,8 +56,8 @@ exports.checkIfExpired = functions.pubsub
   });
 
 
-exports.sendMailIfInside7Days = functions.pubsub
-  .schedule("every day").onRun(async () => {
+exports.sendMailIfInside7Days = functions.region("us-central1").pubsub
+  .schedule("every day 09:00").timeZone("UTC").onRun(async () => {
     const users = [] as any;
 
     await admin.firestore()
@@ -142,7 +142,7 @@ exports.sendMailIfInside7Days = functions.pubsub
 
 
 exports.sendEveryMonthaMail = functions.pubsub
-  .schedule("every month").onRun(async () => {
+  .schedule("0 9 1 * *").timeZone("UTC").onRun(async () => {
     functions.logger.info("Hello logs!", {structuredData: true});
 
     const users = [] as any;
@@ -192,19 +192,23 @@ exports.sendEveryMonthaMail = functions.pubsub
         return 0;
       }).forEach((data: Giftcards) => {
         let datum = new Date();
+        const today = new Date();
+
         if (data.validDate) {
           datum = new Date(data.validDate);
         }
 
-        const parsedDate = data.validDate ?
-          `(${datum.getDate()}-${datum.getMonth()+1}-${datum.getFullYear()})` :
-          "(geen verloopdatum)";
+        if (datum >= today) {
+          const parsedDate = data.validDate ?
+            `(${datum.getDate()}-${datum.getMonth()+1}-${datum.getFullYear()})` :
+            "(geen verloopdatum)";
 
-        dataList += `
+          dataList += `
           <b>${data.name}</b>
           ${data.amount} euro
           ${parsedDate}
           <br />`;
+        }
       });
 
       const transporter = createTransport({
