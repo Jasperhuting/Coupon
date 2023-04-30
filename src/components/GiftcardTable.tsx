@@ -71,7 +71,30 @@ const GiftCardbutton = styled.button`
       box-sizing: border-box;
       display: block;
       border: 1px solid #e5e5e5;
+      border-radius: 100%;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      &:not(:disabled) {
+        cursor: pointer;
+      }
+
+      &:not(:disabled):hover {
+        background-color: #e5e5e5;
+      }
+`
+
+
+const GiftCardbuttonText = styled.button`
+      padding: 10px;
+      background-color: white;
+      box-sizing: border-box;
+      display: block;
       border-radius: 4px;
+      margin-left: 4px;
+      border: 1px solid #e5e5e5;
       &:not(:disabled) {
         cursor: pointer;
       }
@@ -86,10 +109,10 @@ const GiftCardRow = styled.div<{ extra?: boolean, endrow?: boolean, sort?: strin
     flex-direction: row;
     width: 100%;
     gap: 1px;
-    border-bottom: 1px solid #2b3446;    
+    border-bottom: 1px solid #d6d7da;    
     margin-bottom: 1px;
-    border-left: 1px solid #e5e5e5;
-    border-right: 1px solid #e5e5e5;
+    /* border-left: 1px solid #e5e5e5;
+    border-right: 1px solid #e5e5e5; */
     box-sizing: border-box;
      
     ${StyledColumn} {
@@ -106,9 +129,8 @@ const GiftCardRow = styled.div<{ extra?: boolean, endrow?: boolean, sort?: strin
       }
    }
 
-   background-color: ${props => props.endrow ? '#000' : ''};
    ${StyledColumn} {
-      background-color: ${props => props.endrow ? '#000 !important' : ''};
+      background-color: ${props => props.endrow ? '#2b3446 !important' : ''};
       color: ${props => props.endrow ? '#fff !important' : ''};
       margin-top: ${props => props.endrow ? '-2px' : '0'};
 
@@ -120,14 +142,14 @@ const GiftCardRow = styled.div<{ extra?: boolean, endrow?: boolean, sort?: strin
 
 const GiftCard = styled.div<{ extra?: boolean }>`
 width: 100%;
-
+/* 
 &:nth-child(even) {
   ${GiftCardRow} {
           ${StyledColumn} {
-    background-color: ${props => !props.extra && '#eee'};
+    background-color: ${props => !props.extra && '#f9f9f9'};
    }
   }
-}
+} */
 
   
 `
@@ -204,8 +226,8 @@ export const GiftcardTable = ({ defaultGiftcards, expiredGiftcards, deletedGiftc
                         <GiftCardbutton disabled={giftcard.status === Status.DELETED} onClick={() => deleteGiftcard(giftcard.id)} ><FontAwesomeIcon icon={faTrash} /></GiftCardbutton>
 
 
-                        {giftcard.status === Status.USED && <GiftCardbutton onClick={() => setGiftcardUsed(giftcard, false)}>Niet gebruikt</GiftCardbutton>}
-                        {(giftcard.status === Status.DEFAULT || giftcard.status === Status.NEW) && <GiftCardbutton onClick={() => setGiftcardUsed(giftcard, true)}>Gebruikt</GiftCardbutton>}
+                        {giftcard.status === Status.USED && <GiftCardbuttonText onClick={() => setGiftcardUsed(giftcard, false)}>Niet gebruikt</GiftCardbuttonText>}
+                        {(giftcard.status === Status.DEFAULT || giftcard.status === Status.NEW) && <GiftCardbuttonText onClick={() => setGiftcardUsed(giftcard, true)}>Gebruikt</GiftCardbuttonText>}
 
                     </Column>
                 </GiftCardRow>
