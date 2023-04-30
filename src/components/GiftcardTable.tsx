@@ -6,7 +6,6 @@ import db from '../db/index';
 import { store } from "App";
 import { FontAwesomeIcon, } from "@fortawesome/react-fontawesome";
 import { faCalendarXmark, faCheckCircle, faGift, faRocket, faTrash } from "@fortawesome/free-solid-svg-icons";
-import { useEffect } from "react";
 
 
 const months = ["januari", "februari", "maart", "april", "mei", "juni", "juli", "augustus", "september", "oktober", "november", "december"];
@@ -57,7 +56,7 @@ const StatusTranslation = (status: Status | undefined) => {
 
 const giftcardDate = (giftcardDate: string | undefined) => {
     if (giftcardDate === null || !giftcardDate || giftcardDate === 'Invalid Date') {
-        return 'Geen einddata';
+        return 'Geen einddatum';
     }
     const date = new Date(giftcardDate);
     return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
