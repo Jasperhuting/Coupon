@@ -49,8 +49,6 @@ const Content = styled.div`
 
 export const store = createStore();
 
-export const UserContext = createContext<any>(null);
-
 function App() {
 
 
@@ -154,7 +152,7 @@ function App() {
           <Content>
             <Login loginState={loginState} />
           </Content>}
-          {loggedIn && <AddGiftcard triggerReload={() => getGiftcards()} />}
+          {/* {loggedIn && <AddGiftcard triggerReload={() => getGiftcards()} />} */}
       </div>
       
     </>
