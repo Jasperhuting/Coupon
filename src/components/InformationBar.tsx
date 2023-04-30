@@ -9,6 +9,6 @@ export const InformationBar = ({ amountGiftcards, totalAmount }: InformationProp
     
 
     return <>
-        <h1>({amountGiftcards}) Giftcards, totaal: € {totalAmount}</h1>
+        <h1>({amountGiftcards}) Giftcards, totaal: {new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR' }).format(totalAmount)}</h1>
     </>
 }

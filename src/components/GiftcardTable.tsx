@@ -14,32 +14,37 @@ const months = ["januari", "februari", "maart", "april", "mei", "juni", "juli", 
 const StatusTranslation = (status: Status | undefined) => {
     if (status === Status.NEW) {
         return {
-            icon: <FontAwesomeIcon icon={faRocket} />,
-            text: 'Nieuw'
+            icon: <FontAwesomeIcon color="#FFC107" icon={faRocket} />,
+            text: 'Nieuw',
+            color: "#FFC107"
         }
     }
     if (status === Status.USED) {
         return {
-            icon: <FontAwesomeIcon icon={faGift} />,
-            text: 'Gebruikt'
+            icon: <FontAwesomeIcon color="#03A9F4" icon={faGift} />,
+            text: 'Gebruikt',
+            color: "#03A9F4"
         }
     }
     if (status === Status.DEFAULT) {
         return {
-            icon: <FontAwesomeIcon icon={faCheckCircle} />,
-            text: 'Geldig'
+            icon: <FontAwesomeIcon color="#4CAF50" icon={faCheckCircle} />,
+            text: 'Geldig',
+            color: "#4CAF50"
         }
     }
     if (status === Status.EXPIRED) {
         return {
-            icon: <FontAwesomeIcon icon={faCalendarXmark} />,
-            text: 'Verlopen'
+            icon: <FontAwesomeIcon color="#FF5722" icon={faCalendarXmark} />,
+            text: 'Verlopen',
+            color: "#FF5722"
         }
     }
     if (status === Status.DELETED) {
         return {
-            icon: <FontAwesomeIcon icon={faTrash} />,
-            text: 'Verwijderd'
+            icon: <FontAwesomeIcon color="#9E9E9E" icon={faTrash} />,
+            text: 'Verwijderd',
+            color: "#9E9E9E"
         }
     }
     if (!status) {
@@ -127,7 +132,8 @@ width: 100%;
 
   
 `
-const Small = styled.span`
+const Small = styled.span<{ color?: string }>`
+    color: ${props => props.color || 'black'};
     font-size: 11px;
 `
 const TableHeader = styled.div`
@@ -188,10 +194,10 @@ export const GiftcardTable = ({ defaultGiftcards, expiredGiftcards, deletedGiftc
                         <span>{giftcard.name}</span>
                         <span>{user.currentEmail === 'jasper.huting@gmail.com' && `(${giftcard.owner})`}</span>
                     </Column>
-                    <Column>{giftcard.amount} euro</Column>
+                    <Column align="right">{giftcard.amount && new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR' }).format(giftcard.amount)}</Column>
                     <Column row={true}>
                         {StatusTranslation(giftcard.status)?.icon}
-                        <Small>{StatusTranslation(giftcard.status)?.text}</Small>
+                        <Small color={StatusTranslation(giftcard.status)?.color}>{StatusTranslation(giftcard.status)?.text}</Small>
                     </Column>
 
                     <Column>{giftcardDate(giftcard.validDate)}</Column>
@@ -241,7 +247,6 @@ export const GiftcardTable = ({ defaultGiftcards, expiredGiftcards, deletedGiftc
 
     }
 
-
     const setGiftcardUsed = (giftcard: Giftcard, gebruikt: boolean) => {
 
         const docRef = doc(firestore, "giftcards", giftcard.id);
@@ -287,27 +292,11 @@ export const GiftcardTable = ({ defaultGiftcards, expiredGiftcards, deletedGiftc
         {/* {getExpired === 'true' && setGiftcards('expired', expiredGiftcards)} */}
         {console.log("expiredGiftcards", expiredGiftcards)}
 
-
-        {allData.map((data) => {
-            const date = new Date(data.validDate!);
-            const today = new Date();
-            const _today = new Date();
-            const todayPlusSevenDays = new Date(_today.setDate(today.getDate() + 7));
-            if (date <= todayPlusSevenDays && date >= today) {
-            console.log(data.name);
-            console.log({date});
-            console.log({todayPlusSevenDays});
-            console.log({today});
-            return <>test</>
-            } 
-            return false;
-        })}
-
         {/*  currentEmail === 'jasper.huting@gmail.com' */}
         <GiftCard key={allData.length + 1} data-id={allData.length + 1} extra={true}>
             <GiftCardRow endrow={true}>
                 <Column>Totaal ({amountGiftcards})</Column>
-                <Column>{totalAmount} euro</Column>
+                <Column>{new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR' }).format(totalAmount)} euro</Column>
                 <Column></Column>
                 <Column></Column>
                 <Column></Column>

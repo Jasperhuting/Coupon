@@ -110,7 +110,7 @@ function App() {
     }
 
     getGiftcards();
-  }, [giftcards?.allData])
+  }, [giftcards?.allData, loggedIn])
 
 
 
@@ -154,9 +154,9 @@ function App() {
           <Content>
             <Login loginState={loginState} />
           </Content>}
-
+          {loggedIn && <AddGiftcard triggerReload={() => getGiftcards()} />}
       </div>
-      {loggedIn && <AddGiftcard triggerReload={() => getGiftcards()} />}
+      
     </>
   );
 }

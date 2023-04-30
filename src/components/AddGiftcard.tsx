@@ -52,7 +52,7 @@ export const AddGiftcard = ({ triggerReload }: AddGiftCardProps) => {
         validDate: '',
     })
 
-    const addGiftCard = () => {
+    const addGiftCardAction = () => {
 
         formData.validDate = new Date(formData.validDate).toString();
         formData.owner = '';
@@ -77,7 +77,7 @@ export const AddGiftcard = ({ triggerReload }: AddGiftCardProps) => {
         <AddGiftcardInput name="name" placeholder="name" value={formData.name} type="text" onChange={($el) => handleChange($el, 'name')} />
         <AddGiftcardInput name="amount" placeholder="amount" value={formData.amount} type="number" onChange={($el) => handleChange($el, 'amount')} />
         <AddGiftcardInput name="validDate" placeholder="validDate" type="date" value={formData.validDate} onChange={($el) => handleChange($el, 'validDate')} />
-        <button onClick={addGiftCard} disabled={!formData.name}>Toevoegen</button>
+        <button onClick={addGiftCardAction} disabled={!formData.name}>Toevoegen</button>
     </AddGiftCardContainer>
 }
 
