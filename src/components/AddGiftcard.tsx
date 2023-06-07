@@ -26,7 +26,7 @@ const AddGiftCardContainer = styled.div`
     bottom: 0;
     width: calc(100% - 40px);
     padding: 20px;
-    background-color: rgba(40, 107, 193, 1);
+    /* background-color: rgba(40, 107, 193, 1); */
     max-width: 1024px;
     margin: 0 auto;
     border-top-left-radius: 4px;

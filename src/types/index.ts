@@ -13,6 +13,7 @@ export type Giftcard = {
   validDate?: string;
   owner?: string;
   status?: Status;
+  remaining?: number;
   id: string;
 }
 
@@ -23,12 +24,12 @@ export type User = {
 }
 
 export type GetAllGiftcardsReturnProps = {
-    default: Giftcard[],
-    expired: Giftcard[],
-    used: Giftcard[],
-    new: Giftcard[],
-    deleted: Giftcard[],
-    amount: number,
-    totalAmount: number,
-    allData: Giftcard[],
+  default: Giftcard[],
+  expired: Giftcard[],
+  used: Giftcard[],
+  new: Giftcard[],
+  deleted: Giftcard[],
+  amount: number,
+  totalAmount: number,
+  allData: Giftcard[],
 }

@@ -2,7 +2,7 @@ import styled from "styled-components/macro"
 
 export const StyledColumn = styled.div<{ row?: Boolean, align: String }>`
 
-  
+  position: relative;
   width: 25%;
   display: flex;
   padding: 5px 20px 5px 5px;
@@ -17,6 +17,5 @@ export const StyledColumn = styled.div<{ row?: Boolean, align: String }>`
 
 
 export const Column = (props: any) => {
-  console.log(props.align);
   return <StyledColumn row={props.row} align={props.align}>{props.children}</StyledColumn>
 }
