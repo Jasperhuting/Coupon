@@ -1,9 +1,6 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 
-admin.initializeApp();
-
-
 export const checkIfExpired = exports.checkIfExpired = functions.pubsub
   .schedule("every day").onRun(async () => {
     await admin.firestore()
