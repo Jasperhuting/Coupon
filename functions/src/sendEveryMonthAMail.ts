@@ -1,6 +1,6 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
-import { createTransport } from "nodemailer";
+import {createTransport} from "nodemailer";
 
 admin.initializeApp();
 
@@ -30,19 +30,19 @@ type Giftcards = {
   status: Status;
 }
 
-const { useremail, pass } = functions.config().gmail;
+const {useremail, pass} = functions.config().gmail;
 
 export const sendEveryMonthAMail =
   exports.sendEveryMonthaMail = functions.pubsub
     .schedule("0 9 1 * *").timeZone("UTC").onRun(async () => {
-      functions.logger.info("Hello logs!", { structuredData: true });
+      functions.logger.info("Hello logs!", {structuredData: true});
 
       const users = [] as any;
 
       await admin.firestore()
         .collection("users").get().then((res) => {
           res.docs.map((doc) => {
-            users.push({ ...doc.data(), data: [] });
+            users.push({...doc.data(), data: []});
           });
         });
 
@@ -58,7 +58,7 @@ export const sendEveryMonthAMail =
         });
 
       functions.logger
-        .info(`users length ${users.length}`, { structuredData: true });
+        .info(`users length ${users.length}`, {structuredData: true});
 
       users.forEach((user: Users) => {
         let dataList = "";
@@ -134,7 +134,7 @@ export const sendEveryMonthAMail =
           transporter.sendMail(mailOptions, (error: any, info: any) => {
             if (error) {
               functions.logger.info(`mail error ${error}`,
-                { structuredData: true });
+                {structuredData: true});
               console.log(error);
             } else {
               console.log("Email sent: " + info.response);

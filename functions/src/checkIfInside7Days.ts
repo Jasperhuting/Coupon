@@ -1,6 +1,6 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
-import { createTransport } from "nodemailer";
+import {createTransport} from "nodemailer";
 
 admin.initializeApp();
 
@@ -22,7 +22,7 @@ type Giftcards = {
   status: Status;
 }
 
-const { useremail, pass } = functions.config().gmail;
+const {useremail, pass} = functions.config().gmail;
 
 export const sendMailIfInside7Days =
   exports.sendMailIfInside7Days = functions.region("us-central1").pubsub
@@ -32,7 +32,7 @@ export const sendMailIfInside7Days =
       await admin.firestore()
         .collection("users").get().then((res) => {
           res.docs.map((doc) => {
-            users.push({ ...doc.data(), data: [] });
+            users.push({...doc.data(), data: []});
           });
         });
 
