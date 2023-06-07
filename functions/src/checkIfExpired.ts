@@ -1,8 +1,8 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 
-export const checkIfExpired = exports.checkIfExpired = functions
-  .region("us-central1").pubsub
+export const checkIfExpired1 = exports.checkIfExpired = functions
+  .pubsub
   .schedule("every day").onRun(async () => {
     await admin.firestore()
       .collection("giftcards").get().then((res) => {

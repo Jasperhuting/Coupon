@@ -30,8 +30,8 @@ type Giftcards = {
 
 const {useremail, pass} = functions.config().gmail;
 
-export const sendEveryMonthAMail =
-  exports.sendEveryMonthaMail = functions.region("us-central1").pubsub
+export const sendEveryMonthAMail1 =
+  exports.sendEveryMonthaMail = functions.pubsub
     .schedule("0 9 1 * *").timeZone("UTC").onRun(async () => {
       functions.logger.info("Hello logs!", {structuredData: true});
 

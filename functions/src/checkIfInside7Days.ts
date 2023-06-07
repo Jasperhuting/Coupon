@@ -22,8 +22,8 @@ type Giftcards = {
 
 const {useremail, pass} = functions.config().gmail;
 
-export const sendMailIfInside7Days =
-  exports.sendMailIfInside7Days = functions.region("us-central1").pubsub
+export const sendMailIfInside7Days1 =
+  exports.sendMailIfInside7Days = functions.pubsub
     .schedule("every day 09:00").timeZone("UTC").onRun(async () => {
       const users = [] as any;
 
