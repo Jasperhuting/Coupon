@@ -4,6 +4,24 @@ import { createTransport } from "nodemailer";
 
 admin.initializeApp();
 
+enum Status {
+  NEW = "NEW",
+  DEFAULT = "DEFAULT",
+  USED = "USED",
+  DELETED = "DELETED",
+  EXPIRED = "EXPIRED",
+}
+
+type Giftcards = {
+  name?: string;
+  amount?: number;
+  remaining?: number;
+  validDate?: string;
+  owner?: string;
+  id: string;
+  status: Status;
+}
+
 const { useremail, pass } = functions.config().gmail;
 
 export const sendMailIfInside7Days =
@@ -33,9 +51,14 @@ export const sendMailIfInside7Days =
         let dataList = "";
         let counter = 0;
 
-        // const dataItems = user.data;
+        const dataItems = user.data
+          .filter(
+            (d: Giftcards) => !["EXPIRED", "DELETED", "USED"]
+              .includes(d.status))
+          .filter(
+            (d: Giftcards) => d.remaining && d.remaining > 0);
 
-        user.data.forEach((data: any) => {
+        dataItems.forEach((data: any) => {
           const date = new Date(data.validDate);
           const today = new Date();
           const _today = new Date();
@@ -82,7 +105,7 @@ export const sendMailIfInside7Days =
 
         if (counter > 0) {
           console.log("none");
-          transporter.sendMail(mailOptions, function (error: any, info: any) {
+          transporter.sendMail(mailOptions, (error: any, info: any) => {
             if (error) {
               console.log(error);
             } else {
