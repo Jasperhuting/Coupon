@@ -55,7 +55,7 @@ export const AddGiftcard = ({ triggerReload }: AddGiftCardProps) => {
     const addGiftCardAction = () => {
 
         formData.validDate = new Date(formData.validDate).toString();
-        formData.owner = '';
+        formData.owner = user.currentUid;
 
         // props.addGiftcard(formData);
         addGiftcardToDatabase(formData, user.currentUid)

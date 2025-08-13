@@ -10,25 +10,15 @@ import styled from 'styled-components/macro';
 import './App.css';
 import { AddGiftcard } from './components/AddGiftcard';
 
-import { InformationBar } from './components/InformationBar';
 import { Login } from './components/Login';
-import { Avatar } from './components/Avatar';
-import { GiftcardTable } from './components/GiftcardTable';
 import { GetAllGiftcardsReturnProps } from './types';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUserNinja } from '@fortawesome/free-solid-svg-icons';
-import { getAllGiftcards, logout, getCurrentUser } from './firestore'
+import { getAllGiftcards, getCurrentUser } from './firestore'
 import { Overview } from 'pages/Overview';
+import { LoggedIn } from './components/LoggedIn';
+import { Main } from './components/Main';
 
 
 
-
-const LoggedInStyled = styled.div`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 10px;
-`
 
 const Content = styled.div`
   display: flex;
@@ -126,49 +116,6 @@ function App() {
     getUser(userUid);
   }, [giftcards?.allData, loggedIn, userInfo && userInfo.hideDeleted, userInfo && userInfo.hideExpired])
 
-
-
-  const LoggedIn = ({ loginState, userUid, currentEmail }: { loginState: string, userUid: string, currentEmail: string }) => {
-    return <>
-      {loginState === 'loggedIn' && userUid && <LoggedInStyled>
-        <Avatar>
-          <FontAwesomeIcon size="1x" color="#2b3446" icon={faUserNinja} />
-        </Avatar>
-        {currentEmail}
-        <button onClick={() => logout()}>Logout</button>
-      </LoggedInStyled>}
-    </>
-  };
-
-  const Main = () => {
-    return <>
-    
-          <Content>
-            {giftcards && <>
-              <InformationBar 
-                userInfo={userInfo} 
-                amountGiftcards={giftcards.amount} 
-                totalAmount={giftcards.totalAmount} 
-                triggerReload={() => getGiftcards()}
-              />
-              <GiftcardTable
-                userInfo={userInfo}
-                expiredGiftcards={giftcards.expired}
-                usedGiftcards={giftcards.used}
-                deletedGiftcards={giftcards.deleted}
-                amountGiftcards={giftcards.amount}
-                newGiftcards={giftcards.new}
-                totalAmount={giftcards.totalAmount}
-                allData={giftcards.allData}
-                triggerReload={() => getGiftcards()}
-                defaultGiftcards={giftcards.default} ></GiftcardTable>
-            </>}
-          </Content> 
-          </>
-  }
-
-
-
   return (
     <>
       <div className="App">
@@ -183,14 +130,22 @@ function App() {
                 {loggedIn ? <Overview /> : <Login loginState={loginState} />}                
               </Content>} />
             <Route path="*" element={
-            <Content>
-              {loggedIn ? <Main /> : <Login loginState={loginState} />}                              
-            </Content>
+              <Content>
+                {loggedIn && giftcards ? (
+                  <Main
+                    giftcards={giftcards}
+                    userInfo={userInfo}
+                    getGiftcards={getGiftcards}
+                  />
+                ) : (
+                  <Login loginState={loginState} />
+                )}
+              </Content>
             } />           
         </Routes>
 
         
-          {/* {loggedIn && <AddGiftcard triggerReload={() => getGiftcards()} />} */}
+          {loggedIn && <AddGiftcard triggerReload={() => getGiftcards()} />}
       </div>
       
     </>
